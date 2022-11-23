@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User
+from models import db, User, Character
 #from models import Person
 
 app = Flask(__name__)
@@ -44,6 +44,32 @@ def handle_hello():
     }
 
     return jsonify(response_body), 200
+
+
+BASE_URL = "https://www.swapi.tech/api/"
+
+
+# Endpoint GET method for characters, planets and vehicles
+@app.route('/people', methods=["GET"])
+def handle_characters():
+    characters = Character.query.all()
+    return jsonify(list(map(
+        lambda character: character.shortalize(),
+        characters
+    ))), 200
+
+
+# Detailed endpoints
+@app.route('/people/<int:id>')
+def handle_one_character(id):
+    character = Character.query.get(id)
+    if character is None:
+        return jsonify({
+            "msg": "not found"
+        }), 404
+    return jsonify(character.serialize()), 200
+
+
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
